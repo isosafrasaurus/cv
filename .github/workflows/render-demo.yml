@@ -43,7 +43,10 @@ jobs:
               convert demo-cv.png -resize 50% demo-cv.png
               convert demo-resume.png -resize 50% demo-resume.png
 
-              # Get widths of the scaled images
+              convert demo-cv.png -bordercolor black -border 1 demo-cv.png
+              convert demo-resume.png -bordercolor black -border 1 demo-resume.png
+
+              # Get widths of the scaled images (calculated after adding border)
               width_cv=$(identify -format "%w" demo-cv.png)
               width_resume=$(identify -format "%w" demo-resume.png)
 
@@ -66,7 +69,7 @@ jobs:
                 -tile 2x1 -geometry +0+0 demo-preview.png
 
               # Add a black outline around the whole image
-              convert demo-preview.png -bordercolor black -border 2 demo-preview.png
+              convert demo-preview.png -bordercolor black -border 1 demo-preview.png
 
               # Clean up intermediate images and PDFs
               rm caption-cv.png caption-resume.png \
