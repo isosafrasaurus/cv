@@ -25,7 +25,7 @@ jobs:
 
       - name: Build CV and Resume, create preview PNG
         run: |
-          # Build PDFs inside the container (intermediate artifacts)
+          # Build PDFs inside the container
           latexmk -pdf -interaction=nonstopmode demo-cv.tex
           latexmk -pdf -interaction=nonstopmode demo-resume.tex
 
@@ -51,7 +51,7 @@ jobs:
           # Stack caption on top of the side-by-side PNG
           convert caption.png tmp-side-by-side.png -append demo-preview.png
 
-          # Clean up intermediate images and PDFs (no PDFs committed)
+          # Clean up intermediate images and PDFs
           rm caption.png tmp-side-by-side.png demo-cv.png demo-resume.png demo-cv.pdf demo-resume.pdf
 
       - name: Ensure README.md references demo-preview.png
