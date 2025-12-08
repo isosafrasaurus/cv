@@ -1,15 +1,20 @@
-name: Render LaTeX demo and update README
+name: Render LaTeX demo previews
 
 on:
   push:
     paths:
-      - "demo.tex"
+      - "demo-cv.tex"
+      - "demo-resume.tex"
       - ".github/workflows/render-demo.yml"
   workflow_dispatch:
 
 jobs:
-  build-and-update:
+  render-and-update:
     runs-on: ubuntu-latest
+
+    # Use the pre-built LaTeX Docker image
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/latex-env:latest
 
     permissions:
       contents: write
@@ -18,38 +23,46 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install LaTeX and PDF tools
+      - name: Build CV and Resume, create preview PNG
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            texlive-latex-base \
-            texlive-latex-recommended \
-            texlive-latex-extra \
-            texlive-fonts-recommended \
-            latexmk \
-            poppler-utils
+          # Build PDFs inside the container (intermediate artifacts)
+          latexmk -pdf -interaction=nonstopmode demo-cv.tex
+          latexmk -pdf -interaction=nonstopmode demo-resume.tex
 
-      - name: Build demo.tex
-        run: |
-          latexmk -pdf -interaction=nonstopmode demo.tex
+          # Convert only the first page of each PDF to PNG
+          pdftoppm -png -f 1 -l 1 demo-cv.pdf demo-cv
+          mv demo-cv-1.png demo-cv.png
 
-      - name: Create PNG screenshot of first page
-        run: |
-          # Convert only the first page of demo.pdf to PNG
-          pdftoppm -png -f 1 -l 1 demo.pdf demo
-          # pdftoppm will create demo-1.png; rename to demo.png
-          mv demo-1.png demo.png
+          pdftoppm -png -f 1 -l 1 demo-resume.pdf demo-resume
+          mv demo-resume-1.png demo-resume.png
 
-      - name: Ensure README.md references demo.png
+          # Create side-by-side preview from the two PNGs
+          montage demo-cv.png demo-resume.png -tile 2x1 -geometry +0+0 tmp-side-by-side.png
+
+          # Determine width for caption bar
+          width=$(identify -format "%w" tmp-side-by-side.png)
+
+          # Create caption image with "CV" on the left and "Resume" on the right
+          convert -size "${width}x80" xc:white \
+            -gravity west  -fill black -pointsize 32 -annotate +40+10 "CV" \
+            -gravity east  -fill black -pointsize 32 -annotate +40+10 "Resume" \
+            caption.png
+
+          # Stack caption on top of the side-by-side PNG
+          convert caption.png tmp-side-by-side.png -append demo-preview.png
+
+          # Clean up intermediate images and PDFs (no PDFs committed)
+          rm caption.png tmp-side-by-side.png demo-cv.png demo-resume.png demo-cv.pdf demo-resume.pdf
+
+      - name: Ensure README.md references demo-preview.png
         run: |
           if [ ! -f README.md ]; then
             echo "# Demo" > README.md
           fi
 
           # If the image reference isn't already present, insert at top
-          if ! grep -q '](demo.png)' README.md; then
-            # Insert the image at the top of the file
-            sed -i '1s|^|![Demo preview](demo.png)\n\n|' README.md
+          if ! grep -q '](demo-preview.png)' README.md; then
+            sed -i '1s|^|![CV and Resume preview](demo-preview.png)\n\n|' README.md
           fi
 
       - name: Commit and push changes
@@ -57,11 +70,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add demo.png README.md
+          git add demo-preview.png README.md
 
           # Commit only if there are changes
           if ! git diff --cached --quiet; then
-            git commit -m "Update LaTeX demo PDF and screenshot"
+            git commit -m "Update LaTeX CV/resume preview image"
             git push
           else
             echo "No changes to commit."
