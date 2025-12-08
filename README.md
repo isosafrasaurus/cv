@@ -1,4 +1,4 @@
-![CV and Resume preview](demo-preview.png)
+![CV and Resume](demo-preview.png)
 
 # isosafrasaurus's Academic CV Format
 
