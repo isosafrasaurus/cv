@@ -1,0 +1,9 @@
+# TeXstudio
+*.aux
+*.log
+*.out
+*.pdf
+*.synctex.gz
+
+# User hidden
+_*

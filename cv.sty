@@ -1,0 +1,122 @@
+% This package defines the isosafrasaurus/resume/cv layout.
+% There are only two, simple features:
+% (1) \entry command:
+%    An entry in the CV with four fields over two lines.
+%    Usage: \entry[title={...}, subtitle={...}, righttitle={...}, description={...}]
+%
+% (2) \begin{stacked} ... \end{stacked} environment:
+%    An entry in the CV with a vertical bar on the left margin for including sub-entries; supports its own main title and subtitle.
+%    Usage: \begin{stacked}[title={...}, subtitle={...}] ... \end{stacked}
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{cv}
+
+% Dependencies
+\RequirePackage{url}
+\RequirePackage{titlesec}
+\RequirePackage{paracol}
+\RequirePackage{xkeyval}
+\RequirePackage{ifthen}
+\RequirePackage{enumitem}
+
+% Set section title formatting to default and disable section numbering
+\titleformat{\section}{}{}{0pt}{}[\hrule]
+% Align section titles with left margin, no before space, 0.5\baselineskip after space
+\titlespacing*{\section}{0pt}{\baselineskip}{0.5\baselineskip}
+% Set spacing between items to zero
+\setlist[itemize]{nosep}
+% Set indentation to zero
+\setlength{\parindent}{0pt}
+% Set URL display font to the normal
+\urlstyle{same}
+
+% Keys for \entry
+\define@key{entry}{title}{\def\entrytitle{#1}}
+\define@key{entry}{subtitle}{\def\entrysubtitle{#1}}
+\define@key{entry}{righttitle}{\def\entryrighttitle{#1}}
+\define@key{entry}{rightsubtitle}{\def\entryrightsubtitle{#1}}
+\define@key{entry}{description}{\def\entrydescription{#1}}
+
+% \entry
+% Creates a CV item with four entries on two lines:
+%    The header consists of a left-/right-aligned title and a left-/right-aligned subtitle.
+%    The body text below the header. Vertical spacing is the same as the normal document parskip.
+%
+% Usage:
+% \entry[
+%    title = {The Job},
+%    righttitle = {Jan. 2025 - Jul. 2025},
+%    subtitle = {The Company},
+%    rightsubtitle = {The City, The State},
+%    description = {I worked.}
+% ]
+\newcommand{\entry}[1][]{
+	\setkeys{entry}{title={}, subtitle={}, righttitle={}, rightsubtitle={}, description={}}
+	\setkeys{entry}{#1}
+	\vspace{\parskip}
+	\begingroup
+	\setlength{\parskip}{0pt}
+	\ifx\entrytitle\@empty
+	\ifx\entryrighttitle\@empty \else \hfill\entryrighttitle \fi
+	\else
+	\entrytitle
+	\ifx\entryrighttitle\@empty \else \hfill\entryrighttitle \fi
+	\fi
+	\par
+	\ifx\entrysubtitle\@empty
+	\ifx\entryrightsubtitle\@empty \else \hfill\entryrightsubtitle\par \fi
+	\else
+	\entrysubtitle
+	\ifx\entryrightsubtitle\@empty \par \else \hfill\entryrightsubtitle\par \fi
+	\fi
+	\endgroup
+	\ifx\entrydescription\@empty
+	\else
+	\par 
+	\entrydescription
+	\fi
+	\par 
+}
+
+% Keys for \begin{stacked} ... \end{stacked}
+\define@key{stack}{title}{\def\stacktitle{#1}}
+\define@key{stack}{subtitle}{\def\stacksubtitle{#1}}
+\define@key{stack}{description}{\def\stackdescription{#1}}
+
+% \begin{stacked} ... \end{stacked}
+% Creates a block environment with its own title and subtitle. Indented with a vertical bar on the left margin.
+%
+% Usage:
+% \begin{stacked}[title={The Company}, subtitle={...}]
+	%    \entry{title={The Second Position}...}
+	%    \entry{title={The First Position}...}
+	% \end{stacked}
+\newenvironment{stacked}[1][]{
+	\setkeys{stack}{title={}, subtitle={}, description={}}
+	\setkeys{stack}{#1}
+	\par
+	\begingroup
+	\setlength{\parskip}{0pt}
+	\ifx\stacktitle\@empty\else \stacktitle\par \fi
+	\ifx\stacksubtitle\@empty\else \stacksubtitle\par \fi
+	\endgroup
+	\vspace{0.5\baselineskip}
+	\columnratio{0.01,0.99}
+	\setlength{\columnsep}{1em}
+	\setlength{\columnseprule}{0.1pt}
+	\begin{paracol}{2}
+		\switchcolumn[0]
+		\switchcolumn[1]
+	}{
+	\end{paracol}
+	\par
+	\ifx\stackdescription\@empty\else
+	\begingroup
+	\vspace{0.5\parskip}
+	\leftskip=1em
+	\stackdescription\par
+	\endgroup
+	\fi
+	\vspace{\parskip}
+}
+\makeatother
+\endinput
