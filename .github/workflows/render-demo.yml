@@ -12,10 +12,6 @@ jobs:
   render-and-update:
     runs-on: ubuntu-latest
 
-    # Use the pre-built LaTeX Docker image
-    container:
-      image: ghcr.io/${{ github.repository_owner }}/latex-env:latest
-
     permissions:
       contents: write
 
@@ -23,36 +19,44 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build CV and Resume, create preview PNG
+      - name: Build CV and Resume, create preview PNG (via LaTeX Docker image)
         run: |
-          # Build PDFs inside the container
-          latexmk -pdf -interaction=nonstopmode demo-cv.tex
-          latexmk -pdf -interaction=nonstopmode demo-resume.tex
+          docker run --rm \
+            -v "$PWD":/work \
+            -w /work \
+            ghcr.io/${{ github.repository_owner }}/latex-env:latest \
+            bash -lc '
+              set -e
 
-          # Convert only the first page of each PDF to PNG
-          pdftoppm -png -f 1 -l 1 demo-cv.pdf demo-cv
-          mv demo-cv-1.png demo-cv.png
+              # Build PDFs inside the container
+              latexmk -pdf -interaction=nonstopmode demo-cv.tex
+              latexmk -pdf -interaction=nonstopmode demo-resume.tex
 
-          pdftoppm -png -f 1 -l 1 demo-resume.pdf demo-resume
-          mv demo-resume-1.png demo-resume.png
+              # Convert only the first page of each PDF to PNG
+              pdftoppm -png -f 1 -l 1 demo-cv.pdf demo-cv
+              mv demo-cv-1.png demo-cv.png
 
-          # Create side-by-side preview from the two PNGs
-          montage demo-cv.png demo-resume.png -tile 2x1 -geometry +0+0 tmp-side-by-side.png
+              pdftoppm -png -f 1 -l 1 demo-resume.pdf demo-resume
+              mv demo-resume-1.png demo-resume.png
 
-          # Determine width for caption bar
-          width=$(identify -format "%w" tmp-side-by-side.png)
+              # Create side-by-side preview from the two PNGs
+              montage demo-cv.png demo-resume.png -tile 2x1 -geometry +0+0 tmp-side-by-side.png
 
-          # Create caption image with "CV" on the left and "Resume" on the right
-          convert -size "${width}x80" xc:white \
-            -gravity west  -fill black -pointsize 32 -annotate +40+10 "CV" \
-            -gravity east  -fill black -pointsize 32 -annotate +40+10 "Resume" \
-            caption.png
+              # Determine width for caption bar
+              width=$(identify -format "%w" tmp-side-by-side.png)
 
-          # Stack caption on top of the side-by-side PNG
-          convert caption.png tmp-side-by-side.png -append demo-preview.png
+              # Create caption image with "CV" on the left and "Resume" on the right
+              convert -size "${width}x80" xc:white \
+                -gravity west  -fill black -pointsize 32 -annotate +40+10 "CV" \
+                -gravity east  -fill black -pointsize 32 -annotate +40+10 "Resume" \
+                caption.png
 
-          # Clean up intermediate images and PDFs
-          rm caption.png tmp-side-by-side.png demo-cv.png demo-resume.png demo-cv.pdf demo-resume.pdf
+              # Stack caption on top of the side-by-side PNG
+              convert caption.png tmp-side-by-side.png -append demo-preview.png
+
+              # Clean up intermediate images and PDFs
+              rm caption.png tmp-side-by-side.png demo-cv.png demo-resume.png demo-cv.pdf demo-resume.pdf
+            '
 
       - name: Ensure README.md references demo-preview.png
         run: |
@@ -79,4 +83,3 @@ jobs:
           else
             echo "No changes to commit."
           fi
-
