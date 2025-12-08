@@ -57,7 +57,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add demo.pdf demo.png README.md
+          git add demo.png README.md
 
           # Commit only if there are changes
           if ! git diff --cached --quiet; then
