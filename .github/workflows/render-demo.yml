@@ -28,7 +28,7 @@ jobs:
             bash -lc '
               set -e
 
-              # Build PDFs inside the container
+              # Build PDFs inside the container (intermediate artifacts)
               latexmk -pdf -interaction=nonstopmode demo-cv.tex
               latexmk -pdf -interaction=nonstopmode demo-resume.tex
 
@@ -39,23 +39,36 @@ jobs:
               pdftoppm -png -f 1 -l 1 demo-resume.pdf demo-resume
               mv demo-resume-1.png demo-resume.png
 
-              # Create side-by-side preview from the two PNGs
-              montage demo-cv.png demo-resume.png -tile 2x1 -geometry +0+0 tmp-side-by-side.png
+              convert demo-cv.png -resize 50% demo-cv.png
+              convert demo-resume.png -resize 50% demo-resume.png
 
-              # Determine width for caption bar
-              width=$(identify -format "%w" tmp-side-by-side.png)
+              # Get width of one (scaled) image
+              width_single=$(identify -format "%w" demo-cv.png)
 
-              # Create caption image with "CV" on the left and "Resume" on the right
-              convert -size "${width}x80" xc:white \
-                -gravity west  -fill black -pointsize 32 -annotate +40+10 "CV" \
-                -gravity east  -fill black -pointsize 32 -annotate +40+10 "Resume" \
-                caption.png
+              # Create caption image for CV
+              convert -size "${width_single}x80" xc:white \
+                -gravity center -fill black -pointsize 32 \
+                -annotate 0 "CV" caption-cv.png
 
-              # Stack caption on top of the side-by-side PNG
-              convert caption.png tmp-side-by-side.png -append demo-preview.png
+              # Create caption image for Resume
+              convert -size "${width_single}x80" xc:white \
+                -gravity center -fill black -pointsize 32 \
+                -annotate 0 "Resume" caption-resume.png
+
+              # Combine captions side-by-side
+              montage caption-cv.png caption-resume.png \
+                -tile 2x1 -geometry +0+0 caption.png
+
+              # Combine the (scaled) page images side-by-side
+              montage demo-cv.png demo-resume.png \
+                -tile 2x1 -geometry +0+0 pages.png
+
+              # Stack caption on top of the pages to form final preview
+              convert caption.png pages.png -append demo-preview.png
 
               # Clean up intermediate images and PDFs
-              rm caption.png tmp-side-by-side.png demo-cv.png demo-resume.png demo-cv.pdf demo-resume.pdf
+              rm caption-cv.png caption-resume.png caption.png pages.png \
+                 demo-cv.png demo-resume.png demo-cv.pdf demo-resume.pdf
             '
 
       - name: Ensure README.md references demo-preview.png
