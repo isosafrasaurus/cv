@@ -1,3 +1,5 @@
+![Demo preview](demo.png)
+
 # isosafrasaurus's Academic CV Format
 
 This LaTeX package defines a format for academic CVs. There are only two features, but they can be combined with native LaTeX features for a versatile range of organized CVs.
