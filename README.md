@@ -1,8 +1,8 @@
 ![CV and Resume](demo-preview.png)
 
-# isosafrasaurus's Academic CV Format
+# isosafrasaurus's CV template
 
-This LaTeX package defines a format for academic CVs. There are only two features, but they can be combined with native LaTeX features for a versatile range of organized CVs.
+This repository provides a simple LaTeX package to help format CVs. Although there is only one command and one environment, they can be combined with native LaTeX features in many versatile ways to create a range of many CVs. Two examples are provided.
 
 ## Dependencies
 
