@@ -35,11 +35,11 @@ Used for standard CV items. It accepts up to four header fields and a descriptio
 
 ```latex
 \entry[
-    title         = {...}, % Main Bold Title (Left)
-    righttitle    = {...}, % Date/Time (Right)
-    subtitle      = {...}, % Company/School (Left)
+    title         = {...}, % Main title (Left)
+    righttitle    = {...}, % Dates (Right)
+    subtitle      = {...}, % Organization (Left)
     rightsubtitle = {...}, % Location (Right)
-    description   = {...}  % Body text/Bullet points
+    description   = {...}  % Body text or bullet points
 ]
 ```
 
