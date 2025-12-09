@@ -24,7 +24,7 @@ jobs:
           docker run --rm \
             -v "$PWD":/work \
             -w /work \
-            ghcr.io/${{ github.repository_owner }}/latex-env:latest \
+            ghcr.io/${{ github.repository_owner }}/ubuntu22.04-texlive:latest \
             bash -lc '
               set -e
 
