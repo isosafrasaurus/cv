@@ -2,7 +2,7 @@
 
 # isosafrasaurus's CV template
 
-This repository provides a simple LaTeX package to help format CVs. Although there is only one command and one environment, they can be combined with native LaTeX features in many versatile ways to create a range of many CVs. Two examples are provided.
+This is a simple LaTeX .sty file to help format CVs. Although there is only one command and one environment, they can be combined with native LaTeX features in many versatile ways to create a range of many CVs. Two examples are provided.
 
 ## Dependencies
 
